@@ -71,6 +71,15 @@ def get_session_id(session_url, mac_address):
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'accept-language': 'en-US,en;q=0.9',
+        'priority': 'u=0, i',
+        'referer': final_url,
+        'sec-ch-ua': '"Chromium";v="148", "Microsoft Edge";v="148", "Not/A)Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'same-origin',
+        'upgrade-insecure-requests': '1',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0',
     }
     
@@ -90,8 +99,13 @@ def login_voucher(session_id, voucher):
     }
     post_url = base64.b64decode(b'aHR0cHM6Ly9wb3J0YWwtYXMucnVpamllbmV0d29ya3MuY29tL2FwaS9hdXRoL3ZvdWNoZXIvP2xhbmc9ZW5fVVM=').decode()
     headers = {
+        "authority": "portal-as.ruijienetworks.com",
+        "accept": "*/*",
+        "accept-language": "en-US,en;q=0.9",
         "content-type": "application/json",
-        "user-agent": 'Mozilla/5.0 (Linux; Android 12; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36',
+        "origin": "https://portal-as.ruijienetworks.com",
+        "referer": f"https://portal-as.ruijienetworks.com/download/static/maccauth/src/index.html?RES=./../expand/res/mrlev58jlgslg49ervu&IS_EG=0&sessionId={session_id}",
+        "user-agent": 'Mozilla/5.0 (Linux; Android 12; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/139.0.0.0',
     }
     try:
         with requests.post(post_url, json=data, headers=headers) as response:
@@ -102,6 +116,7 @@ def login_voucher(session_id, voucher):
             else:
                 return None, res_text
     except Exception as Error:
+        print(f"\033[1;31m[-] Voucher Login Error: {Error}\033[0m")
         return None, str(Error)
 
 async def get_smart_ping():
@@ -118,8 +133,7 @@ async def get_smart_ping():
                 ping_ms = int(ping_result * 1000)
                 connected = True
                 print(f"  {g}✓{w} {target:15} → {g}{ping_ms:>4} ms{w}")
-                if best_result is None or ping_ms < 999:
-                    best_result = f"{ping_ms} ms ({target})"
+                best_result = f"{ping_ms} ms ({target})"
         except: continue
     print("="*56)
     return f"{g}Connected{w}" if connected else f"{r}Offline{w}"
@@ -134,7 +148,8 @@ def do_bypass(session_url, mac_address, voucher, gateway_ip):
     params = {'token': active_session_id, 'phoneNumber': 'RSHOUser'}
     try:
         final_req_url = f'http://{gateway_ip}:2060/wifidog/auth?'
-        response = requests.get(final_req_url, params=params, headers=headers)
+        requests.get(final_req_url, params=params, headers=headers)
+        print("\n\033[1;32m[✓] Internet Bypass Successful!\033[0m")
         return True
     except:
         return False
@@ -157,15 +172,18 @@ def start_bypass():
     print(f"\033[1;34m[+] Auto-Detected MAC: {mac_address}\033[0m")
     print(f"\033[1;34m[+] Auto-Detected Gateway IP: {gateway_ip}\033[0m\n")
     
-    voucher = input(f"\033[1;32m=> Voucher Code ထည့်ပါ (သိမ်းထားပြီးသား - {old_voucher}): \033[0m").strip() or old_voucher
+    voucher = input(f"\033[1;32m=> Voucher Code ထည့်ပါ ({old_voucher}): \033[0m").strip() or old_voucher
     save_config(voucher)
     
     print("\n\033[1;33m[*] Internet Bypass စတင်နေပါပြီ...\033[0m")
     do_bypass(FIXED_URL, mac_address, voucher, gateway_ip)
     
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(auto_loop_bypass(FIXED_URL, mac_address, voucher, gateway_ip))
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(auto_loop_bypass(FIXED_URL, mac_address, voucher, gateway_ip))
+    except KeyboardInterrupt:
+        print("\n\n  🛑 Auto loop stopped.")
 
 if __name__ == "__main__":
     start_bypass()
