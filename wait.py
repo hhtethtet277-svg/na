@@ -22,9 +22,7 @@ r = "\033[1;31m"
 w = "\033[0m"
 c = "\033[1;36m"
 
-# Global variables for auto loop
 auto_loop_running = False
-loop_interval = 240  # 4 minute in seconds
 
 def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
@@ -69,87 +67,43 @@ def replace_mac(url, new_mac):
 def get_session_id(session_url, mac_address):
     final_url = replace_mac(session_url, mac_address)
     headers = {
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'accept-language': 'en-US,en;q=0.9',
-        'priority': 'u=0, i',
-        'referer': final_url,
-        'sec-ch-ua': '"Chromium";v="148", "Microsoft Edge";v="148", "Not/A)Brand";v="99"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'same-origin',
-        'upgrade-insecure-requests': '1',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
     }
-    
     try:
-        response = requests.get(final_url, headers=headers)
+        response = requests.get(final_url, headers=headers, timeout=10)
         session_id = re.search(r"[?&]sessionId=([a-zA-Z0-9]+)", response.url).group(1)
         return session_id
-    except Exception as e:
-        print(f"\033[1;31m[-] Error Getting Session ID: {e}\033[0m")
+    except Exception:
         return None
 
 def login_voucher(session_id, voucher):
-    data = {
-        "accessCode": voucher,
-        "sessionId": session_id,
-        "apiVersion": 1
-    }
+    data = {"accessCode": voucher, "sessionId": session_id, "apiVersion": 1}
     post_url = base64.b64decode(b'aHR0cHM6Ly9wb3J0YWwtYXMucnVpamllbmV0d29ya3MuY29tL2FwaS9hdXRoL3ZvdWNoZXIvP2xhbmc9ZW5fVVM=').decode()
-    headers = {
-        "authority": "portal-as.ruijienetworks.com",
-        "accept": "*/*",
-        "accept-language": "en-US,en;q=0.9",
-        "content-type": "application/json",
-        "origin": "https://portal-as.ruijienetworks.com",
-        "referer": f"https://portal-as.ruijienetworks.com/download/static/maccauth/src/index.html?RES=./../expand/res/mrlev58jlgslg49ervu&IS_EG=0&sessionId={session_id}",
-        "user-agent": 'Mozilla/5.0 (Linux; Android 12; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/139.0.0.0',
-    }
+    headers = {"content-type": "application/json", "user-agent": "Mozilla/5.0"}
     try:
-        with requests.post(post_url, json=data, headers=headers) as response:
-            res_text = response.text
-            token_match = re.search('token=(.*?)&', res_text)
-            if token_match:
-                return token_match.group(1), None
-            else:
-                return None, res_text
-    except Exception as Error:
-        print(f"\033[1;31m[-] Voucher Login Error: {Error}\033[0m")
-        return None, str(Error)
+        response = requests.post(post_url, json=data, headers=headers, timeout=10)
+        token_match = re.search('token=(.*?)&', response.text)
+        if token_match:
+            return token_match.group(1)
+    except Exception:
+        return None
+    return None
 
-async def get_smart_ping():
-    targets = ["google.com", "8.8.8.8", "cloudflare.com"]
-    print("\n" + "="*56)
-    print("  📶 Checking Internet Connection...")
-    print("="*56)
-    connected = False
-    best_result = None
-    for target in targets:
-        try:
-            ping_result = await asyncio.to_thread(ping, target, timeout=2)
-            if ping_result is not None:
-                ping_ms = int(ping_result * 1000)
-                connected = True
-                print(f"  {g}✓{w} {target:15} → {g}{ping_ms:>4} ms{w}")
-                best_result = f"{ping_ms} ms ({target})"
-        except: continue
-    print("="*56)
-    return f"{g}Connected{w}" if connected else f"{r}Offline{w}"
+async def check_internet():
+    try:
+        ping_result = await asyncio.to_thread(ping, "8.8.8.8", timeout=3)
+        return ping_result is not None and ping_result is not False
+    except:
+        return False
 
 def do_bypass(session_url, mac_address, voucher, gateway_ip):
     session_id = get_session_id(session_url, mac_address)
     if not session_id: return False
-    active_session_id, error_msg = login_voucher(session_id, voucher)
+    active_session_id = login_voucher(session_id, voucher)
     if not active_session_id: return False
     
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    params = {'token': active_session_id, 'phoneNumber': 'RSHOUser'}
     try:
-        final_req_url = f'http://{gateway_ip}:2060/wifidog/auth?'
-        requests.get(final_req_url, params=params, headers=headers)
-        print("\n\033[1;32m[✓] Internet Bypass Successful!\033[0m")
+        requests.get(f'http://{gateway_ip}:2060/wifidog/auth?', params={'token': active_session_id, 'phoneNumber': 'RSHOUser'}, timeout=5)
         return True
     except:
         return False
@@ -157,26 +111,26 @@ def do_bypass(session_url, mac_address, voucher, gateway_ip):
 async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip):
     global auto_loop_running
     auto_loop_running = True
+    print(f"\n{c}[*] Auto-Bypass စနစ် စတင်ပြီ (လိုင်းပြုတ်မှသာ ပြန်ဝင်ပါမည်){w}\n")
+    
     while auto_loop_running:
-        do_bypass(session_url, mac_address, voucher, gateway_ip)
-        await asyncio.sleep(loop_interval)
+        is_connected = await check_internet()
+        if not is_connected:
+            print(f"{r}[!] အင်တာနက် ပြတ်တောက်သွားသည်! ပြန်ချိတ်နေသည်...{w}")
+            if do_bypass(session_url, mac_address, voucher, gateway_ip):
+                print(f"{g}[✓] အင်တာနက် ပြန်လည်ရရှိပါပြီ။{w}")
+            else:
+                print(f"{r}[-] ချိတ်ဆက်မှု မအောင်မြင်ပါ။{w}")
+        await asyncio.sleep(30)
 
 def start_bypass():
     clear_screen()
     banner()
-    
     mac_address, gateway_ip = extract_from_url(FIXED_URL)
     config = load_config()
     old_voucher = config.get("voucher", "")
-    
-    print(f"\033[1;34m[+] Auto-Detected MAC: {mac_address}\033[0m")
-    print(f"\033[1;34m[+] Auto-Detected Gateway IP: {gateway_ip}\033[0m\n")
-    
     voucher = input(f"\033[1;32m=> Voucher Code ထည့်ပါ ({old_voucher}): \033[0m").strip() or old_voucher
     save_config(voucher)
-    
-    print("\n\033[1;33m[*] Internet Bypass စတင်နေပါပြီ...\033[0m")
-    do_bypass(FIXED_URL, mac_address, voucher, gateway_ip)
     
     try:
         loop = asyncio.new_event_loop()
