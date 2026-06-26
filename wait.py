@@ -11,7 +11,7 @@ import time
 CONFIG_FILE = "config_kuranomistablebypass.json"
 
 # ==================== FIXED URL ====================
-FIXED_URL = "https://portal-as.ruijienetworks.com/api/auth/wifidog?stage=portal&gw_id=28d0f5c28350&gw_sn=CAR8123001633&gw_address=192.168.110.1&gw_port=2060&ip=192.168.110.94&mac=ae:09:2b:46:d5:42&slot_num=14&nasip=192.168.1.102&ssid=VLAN233&ustate=0&mac_req=1&url=http%3A%2F%2F192.168.0.1%2F&chap_id=%5C212&chap_challenge=%5C237%5C325%5C342%5C201%5C157%5C140%5C327%5C156%5C160%5C076%5C266%5C055%5C327%5C314%5C045%5C070"
+FIXED_URL = "https://portal-as.ruijienetworks.com/api/auth/wifidog?stage=portal&gw_id=c8cd555c90fe&gw_sn=H1T07Y5002825&gw_address=192.168.110.1&gw_port=2060&ip=192.168.110.14&mac=b2:d5:ee:b0:d8:f6&slot_num=8&nasip=192.168.1.151&ssid=VLAN233&ustate=0&mac_req=1&url=http%3A%2F%2F192.168.0.1%2F&chap_id=%5C111&chap_challenge=%5C133%5C017%5C322%5C100%5C140%5C102%5C321%5C360%5C140%5C300%5C055%5C154%5C140%5C312%5C116%5C071"
 # ===================================================
 
 # Color codes
