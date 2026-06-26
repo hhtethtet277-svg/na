@@ -49,9 +49,9 @@ def banner():
 def show_menu():
     print("\n" + "="*56)
     print("\033[1;33m[ MAIN MENU ]\033[0m")
-    print("  \033[1;32m[1]\033[0m 🎮 Bypass Mode (180s interval)")
-    print("  \033[1;34m[2]\033[0m 🛡️ Stable Mode (260s interval)")
-    print("  \033[1;35m[3]\033[0m 🤖 Auto Mode (Smart Detection)")
+    print("  \033[1;32m[1]\033[0m ⏭ Bypass Mode loop 20second(20s interval)")
+    print("  \033[1;34m[2]\033[0m ⏭ Bypass Mode loop 60second(60s interval)")
+    print("  \033[1;35m[3]\033[0m ⏭ Bypass Mode loop 100second(100 Detection)")
     print("  \033[1;31m[4]\033[0m 🚪 Exit")
     print("="*56)
 
