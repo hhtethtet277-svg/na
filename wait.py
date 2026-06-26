@@ -23,7 +23,7 @@ c = "\033[1;36m"
 
 # Global variables
 auto_loop_running = False
-loop_interval = 240  # Default
+loop_interval = 20  # Default
 internet_connected = False
 last_ping_time = 0
 ping_history = []
@@ -276,13 +276,13 @@ async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode="
     
     # Set interval based on mode
     if mode == "gaming":
-        loop_interval = 180
+        loop_interval = 20
         mode_name = "🎮 Gaming Mode"
     elif mode == "stable":
-        loop_interval = 260
+        loop_interval = 60
         mode_name = "🛡️ Stable Mode"
     else:  # auto mode
-        loop_interval = 240
+        loop_interval = 100
         mode_name = "🤖 Auto Mode (Smart Detection)"
         print("\n" + "="*56)
         print("  🤖 Auto Mode - Smart Detection Active")
