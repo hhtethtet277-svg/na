@@ -25,6 +25,7 @@ def banner():
     print(r" |____/|_|  |_|____/|_|\_\  |_| |_/_/   \_\____|_|\_\ ")
     print(f"\n          {Y}>>> {W}SMS Hack VIP Tool {Y}<<<{X}")
     print(f"\n          {Y}>>> {W}Key တောင်းရန် 👉 @Nain663 {Y}<<<{X}")
+    print(f"\n          {Y}>>> {W}Att တာရပ်လိုလျှင် CTRL ကိုနှိပ်ပီးရင် C ကိုနှိပ် Enter ခေါက်ပါ {Y}<<<{X}")
     print(f"{W}╔══════════════════════════════════════════════════╗")
     d_id = get_id()
     print(f"  {G}•{W} Device ID : {C}{d_id}{W}")
